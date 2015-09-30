@@ -16,7 +16,7 @@ var Sequelize           = require('sequelize'),
     modelsPath          = '',
     definitionDir       = 'definition-files',
     definitionDirCustom = definitionDir + '-custom',
-    debug               = false,
+    debug               = true,
     debugFD             = '',
     sequelize           = null;
 
@@ -139,23 +139,25 @@ module.exports = {};
  * @param {string} username - Username of the database
  * @param {string} password - Password of the database
  * @param {Object} obj - Object to pass new Sequelize() function. See Sequelize for details.
+ * @param {bool} debugjs - Should the debug.js file be generated.
  * @example
  * var orm = require('../model');
  * orm.setup('path/to/model', 'database', 'user', 'password', {
      *     host: '127.0.0.1',
      *     logging: false,
      *     native: true
-     * });
+     * }, true);
  */
-module.exports.setup = function (database, username, password, obj) {
+module.exports.setup = function (database, username, password, obj, debugjs) {
     if (typeof obj !== 'object') { obj = {}; }
     if (obj.dialect === undefined || obj.dialect === null) { obj.dialect = 'postgres'; }
+    this.debug = debugjs ? debugjs : this.debug;
 
     if (arguments.length === 2) {
         sequelize = new Sequelize(database, username);
     } else if (arguments.length === 3) {
         sequelize = new Sequelize(database, username, password);
-    } else if (arguments.length === 4) {
+    } else if (arguments.length === 4 || arguments.length === 5) {
         sequelize = new Sequelize(database, username, password, obj);
     }
     modelsPath = __dirname;
