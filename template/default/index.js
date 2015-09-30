@@ -30,8 +30,10 @@ function defineModel(file) {
         options     = object.options || {},
         modelName   = object.modelName;
 
-    fs.writeSync(debugFD, 'var ' + modelName + ' = Sequelize.define("' + modelName + '",\n' + util.inspect(object.attributes) + ',\n' + util.inspect(options, {depth: null}) + ');\n\n\n');
-
+    if (debug) {
+      fs.writeSync(debugFD, 'var ' + modelName + ' = Sequelize.define("' + modelName + '",\n' + util.inspect(object.attributes) + ',\n' + util.inspect(options, {depth: null}) + ');\n\n\n');
+    }
+    
     models[modelName] = sequelize.define(modelName, object.attributes, options);
     if (object.relations !== undefined) {
         relationships[modelName] = object.relations;
@@ -48,7 +50,9 @@ function defineModel(file) {
  * @param {Object} options - Sequelize options of relation.
  */
 function defineRelation(modelName, relationType, targetModelName, options) {
-    fs.writeSync(debugFD, modelName + '.' + relationType + '(' + targetModelName + ', ' + util.inspect(options, {depth: null}) + ');\n\n');
+    if (debug) {
+      fs.writeSync(debugFD, modelName + '.' + relationType + '(' + targetModelName + ', ' + util.inspect(options, {depth: null}) + ');\n\n');
+    }
     models[modelName][relationType](models[targetModelName], options); // account.hasMany(contact, {...})
 }
 
@@ -114,12 +118,17 @@ function processAllRelations(callback) {
 function init() {
     var debugFile = path.join(__dirname, 'debug.js');
     if (fs.existsSync(debugFile)) { fs.unlinkSync(debugFile); }
-    debugFD = fs.openSync(debugFile, 'a');
 
+    if (debug) {
+      debugFD = fs.openSync(debugFile, 'a');
+    }
+    
     getFileList(modelsPath).forEach(defineModel);
     processAllRelations(defineRelation);
 
-    fs.closeSync(debugFD);
+    if (debug) {
+      fs.closeSync(debugFD);
+    }
 }
 
 module.exports = {};
